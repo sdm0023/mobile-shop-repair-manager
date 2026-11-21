@@ -100,41 +100,31 @@ export async function waitForGisLoaded(timeoutMs = 6000): Promise<boolean> {
   });
 }
 
-export async function requestGoogleAccessToken(options?: {
-  clientId?: string;
-  prompt?: '' | 'consent' | 'select_account';
-  timeoutMs?: number;
-}): Promise<string> {
-  const loaded = await waitForGisLoaded();
-  if (!loaded || !window.google?.accounts?.oauth2) {
-    throw new Error(
-      'Google Identity Services script failed to load. Check network access to accounts.google.com.'
-    );
+function formatGisError(err: { type?: string; message?: string }): string {
+  if (err.type === 'popup_failed_to_open') {
+    return 'Google Sign-In popup was blocked by your browser. Please allow popups for this site (or open the app in a full browser tab) and click Connect again.';
   }
+  if (err.type === 'popup_closed') {
+    return 'Google Sign-In popup was closed before completing authorization.';
+  }
+  return err.message || `OAuth popup error (${err.type || 'unknown'})`;
+}
 
-  const effective =
-    sanitizeClientId(options?.clientId) || getEffectiveClientId().clientId;
-  if (!effective) {
-    throw new Error(
-      'Google OAuth Client ID is required. Paste your Web OAuth Client ID in Settings or set VITE_GOOGLE_CLIENT_ID.'
-    );
-  }
-  if (!effective.endsWith('.apps.googleusercontent.com')) {
-    throw new Error(
-      `Invalid OAuth Client ID format ("${effective}"). It must be a Web Client ID ending with .apps.googleusercontent.com.`
-    );
-  }
-
+function invokeGisTokenPopup(
+  effectiveClientId: string,
+  prompt: '' | 'consent' | 'select_account',
+  timeoutMs?: number
+): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let settled = false;
     const timer =
-      options?.timeoutMs && options.timeoutMs > 0
+      timeoutMs && timeoutMs > 0
         ? window.setTimeout(() => {
             if (!settled) {
               settled = true;
-              reject(new Error('Silent OAuth token refresh timed out.'));
+              reject(new Error('Google OAuth authorization timed out.'));
             }
-          }, options.timeoutMs)
+          }, timeoutMs)
         : null;
 
     const finishResolve = (token: string) => {
@@ -151,44 +141,90 @@ export async function requestGoogleAccessToken(options?: {
       reject(err);
     };
 
-    const tokenClient = window.google!.accounts!.oauth2!.initTokenClient({
-      client_id: effective,
-      scope: GOOGLE_OAUTH_SCOPES,
-      callback: (response: TokenResponse) => {
-        if (response.error) {
-          finishReject(new Error(response.error_description || response.error));
-          return;
-        }
-        if (!response.access_token) {
-          finishReject(new Error('Google did not return an OAuth access token.'));
-          return;
-        }
-        const expiresInSec = response.expires_in ?? 3599;
-        cachedAccessToken = response.access_token;
-        tokenExpiresAt = Date.now() + expiresInSec * 1000;
-        finishResolve(response.access_token);
-      },
-      error_callback: (err) => {
-        finishReject(new Error(err.message || `OAuth popup error (${err.type})`));
-      },
-    });
+    try {
+      const tokenClient = window.google!.accounts!.oauth2!.initTokenClient({
+        client_id: effectiveClientId,
+        scope: GOOGLE_OAUTH_SCOPES,
+        callback: (response: TokenResponse) => {
+          if (response.error) {
+            finishReject(new Error(response.error_description || response.error));
+            return;
+          }
+          if (!response.access_token) {
+            finishReject(new Error('Google did not return an OAuth access token.'));
+            return;
+          }
+          const expiresInSec = response.expires_in ?? 3599;
+          cachedAccessToken = response.access_token;
+          tokenExpiresAt = Date.now() + expiresInSec * 1000;
+          finishResolve(response.access_token);
+        },
+        error_callback: (err) => {
+          finishReject(new Error(formatGisError(err)));
+        },
+      });
 
-    tokenClient.requestAccessToken({
-      prompt: options?.prompt ?? 'consent',
-    });
+      tokenClient.requestAccessToken({ prompt });
+    } catch (err) {
+      finishReject(
+        err instanceof Error
+          ? err
+          : new Error('Failed to start Google OAuth sign-in popup.')
+      );
+    }
   });
 }
 
-export async function trySilentRefreshAccessToken(
-  clientId?: string
-): Promise<string | null> {
-  try {
-    return await requestGoogleAccessToken({
-      clientId,
-      prompt: '',
-      timeoutMs: 6500,
-    });
-  } catch {
-    return null;
+/**
+ * Requests a Google OAuth access token via GIS Token Client.
+ * IMPORTANT: Executes `tokenClient.requestAccessToken` synchronously when GIS is
+ * already loaded so browser popup blockers preserve the user's click activation.
+ */
+export function requestGoogleAccessToken(options?: {
+  clientId?: string;
+  prompt?: '' | 'consent' | 'select_account';
+  timeoutMs?: number;
+}): Promise<string> {
+  const effective =
+    sanitizeClientId(options?.clientId) || getEffectiveClientId().clientId;
+  if (!effective) {
+    return Promise.reject(
+      new Error(
+        'Google OAuth Client ID is required. Paste your Web OAuth Client ID in Settings or set VITE_GOOGLE_CLIENT_ID.'
+      )
+    );
   }
+  if (!effective.endsWith('.apps.googleusercontent.com')) {
+    return Promise.reject(
+      new Error(
+        `Invalid OAuth Client ID format ("${effective}"). It must be a Web Client ID ending with .apps.googleusercontent.com.`
+      )
+    );
+  }
+
+  const prompt = options?.prompt ?? 'consent';
+
+  // Fast synchronous path: keeps popup strictly inside the user's click call stack.
+  if (isGisLoaded()) {
+    return invokeGisTokenPopup(effective, prompt, options?.timeoutMs);
+  }
+
+  // Fallback if GIS script is still loading on initial page boot.
+  return waitForGisLoaded().then((loaded) => {
+    if (!loaded || !window.google?.accounts?.oauth2) {
+      throw new Error(
+        'Google Identity Services script failed to load. Check network access to accounts.google.com.'
+      );
+    }
+    return invokeGisTokenPopup(effective, prompt, options?.timeoutMs);
+  });
+}
+
+/**
+ * GIS Token Client always opens a popup window (even with prompt=''), so background
+ * silent refresh cannot invoke requestAccessToken without triggering browser popup
+ * blockers. Return only a valid in-memory token here.
+ */
+export async function trySilentRefreshAccessToken(): Promise<string | null> {
+  return getInMemoryAccessToken();
 }

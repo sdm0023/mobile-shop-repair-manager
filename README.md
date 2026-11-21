@@ -13,6 +13,7 @@ An offline-first **Mobile Repair Shop Manager** built with **Kotlin** and **Jetp
 - **Customer Khata Book:** Customer-wise credit/due ledger with total billed, paid, pending balance, one-tap repeat-customer auto-fill on new jobs, partial/full Khata payment collection, and WhatsApp payment reminders.
 - **PDF Receipts, Printing & WhatsApp Dispatch:** Generate A4/thermal-friendly PDF job receipts, share via Android Share Sheet, print via Android Print Service, and send formatted updates or PDF receipts directly to WhatsApp or WhatsApp Business.
 - **Google Sheets & Drive Backup (User-Owned):** Sync job cards and shop profile to a `MobileRepairShop_DB` spreadsheet in the user's own Google Drive and schedule nightly backups via WorkManager—with zero hardcoded API keys or embedded secrets.
+- **App & Signature Info Inspector:** Built-in **Show Info** screen inside Sync Manager showing live installed APK signing certificates (`SHA-1`, `SHA-256`, `MD5`), certificate metadata, and build details with one-tap copy.
 - **Dark, Light & System Themes:** Tuned Material 3 Dark and Light themes selectable in Settings and persisted via DataStore.
 - **Repair & Backup Notifications:** Android 13+ runtime `POST_NOTIFICATIONS` support with dedicated notification channels for job updates, nightly Drive backups, and app update alerts.
 - **GitHub App Update Checker:** Check `releases/latest` on GitHub right from **Settings -> App Updates (GitHub)** (e.g., `sdm0023/mobile-shop-repair-manager`), view release notes, and open the latest APK release page.
@@ -49,16 +50,16 @@ An offline-first **Mobile Repair Shop Manager** built with **Kotlin** and **Jetp
 │   ├── ui/
 │   │   ├── ShopViewModel.kt
 │   │   ├── components/   # Reusable M3 components (AppCard, AppButton, AppTextField, Badges)
-│   │   ├── screens/      # Dashboard, NewJob, JobDetail, KhataBook, ReceiptPreview, Settings, Sync
+│   │   ├── screens/      # Dashboard, NewJob, JobDetail, KhataBook, ReceiptPreview, Settings, Sync, ShowInfo
 │   │   └── theme/        # Material 3 Dark/Light ColorScheme & ShopSemanticColors
-│   └── util/             # NotificationHelper & ReceiptPdfGenerator
+│   └── util/             # NotificationHelper, ReceiptPdfGenerator & AppSignatureInspector
 ├── web-app/                         # Web App POS (React + Vite + TypeScript)
 │   ├── start-pos.bat                # One-click Windows local server launcher (http://localhost:3000)
 │   ├── start-pos.command            # macOS / Linux local server launcher
 │   ├── LOCAL_SETUP.md               # Detailed local POS & Google Sheets setup guide
 │   ├── package.json
 │   └── src/
-├── .github/workflows/android-apk.yml # Signed Release APK GitHub Actions workflow
+├── .github/workflows/android-apk.yml # Signed Release/Debug APK GitHub Actions workflow
 └── version.json                     # Remote versionCode manifest for in-app update checks
 ```
 
@@ -75,7 +76,7 @@ An offline-first **Mobile Repair Shop Manager** built with **Kotlin** and **Jetp
 
 ### How to Install on Your Android Phone
 1. On your Android phone, open **[Latest GitHub Release](https://github.com/sdm0023/mobile-shop-repair-manager/releases/latest)** in Chrome or any browser.
-2. Scroll to **Assets** and tap the `.apk` file (e.g., `MobileRepairShop-v1.0.apk` or `MobileRepairShop-v1.0-debug.apk`) to download it.
+2. Scroll to **Assets** and tap the `.apk` file (e.g., `MobileRepairShop-v1.1.apk` or `MobileRepairShop-v1.1-debug.apk`) to download it.
 3. Open the downloaded `.apk` file from your browser downloads or **Files** app.
 4. If Android asks *"For your security, your phone isn't allowed to install unknown apps from this source"*:
    - Tap **Settings** -> turn ON **Allow from this source** -> press Back -> tap **Install**.
@@ -88,7 +89,7 @@ An offline-first **Mobile Repair Shop Manager** built with **Kotlin** and **Jetp
 
 ## Web App Version (Desktop / Browser POS)
 
-Alongside the Android app, this repository includes the companion **Web App POS** inside [`web-app/`](web-app/) with matching job cards, Khata ledger, receipt printing, WhatsApp dispatch, and 2-way `MobileRepairShop_DB` Google Sheets sync. It can be used in **two ways**:
+Alongside the Android app, this repository includes the companion **Web App POS** inside [`web-app/`](web-app/) with matching job cards, Khata ledger, PDF receipt generation (`jsPDF`), WhatsApp dispatch, and 2-way `MobileRepairShop_DB` Google Sheets sync. It can be used in **two ways**:
 
 ### 1. Online via Live Web Link (Netlify)
 Open directly in any desktop or mobile browser with zero installation:
@@ -97,8 +98,8 @@ Open directly in any desktop or mobile browser with zero installation:
 ### 2. Offline / Local Shop PC via `.bat` Launcher (`web-app/start-pos.bat`)
 
 #### Download Web App Files to Your PC
-Choose any of these options to download the Web App POS onto a Windows, macOS, or Linux PC:
-- **Option A — Direct Web App ZIP (Fastest, Web App Only):** [Download Web App POS ZIP](https://github.com/sdm0023/mobile-shop-repair-manager/raw/main/public/assets/aistudio/mobile-repair-shop-pos__6__6b2b1b4d.zip) -> Extract the ZIP folder -> Run `start-pos.bat` directly.
+Choose any of these options to download the latest Web App POS onto a Windows, macOS, or Linux PC:
+- **Option A — Direct Web App ZIP (Fastest, Web App Only):** [Download Web App POS ZIP](https://github.com/sdm0023/mobile-shop-repair-manager/raw/main/public/assets/aistudio/mobile-repair-shop-pos.zip) -> Extract the ZIP folder -> Run `start-pos.bat` directly.
 - **Option B — Full Repository ZIP (No Git Required):** [Download Full Repo ZIP](https://github.com/sdm0023/mobile-shop-repair-manager/archive/refs/heads/main.zip) -> Extract the ZIP -> Open the `web-app/` folder.
 - **Option C — Git Sparse Checkout (Download only `web-app/` via Terminal/PowerShell):**
   ```bash
@@ -128,7 +129,7 @@ gradle :app:testDebugUnitTest
 
 ### Publishing New Releases for the In-App Update Checker
 1. Bump `versionCode` and `versionName` in `app/build.gradle.kts` (for example, `versionCode = 2`, `versionName = "1.1"`) and update [`version.json`](version.json) to match.
-2. *(Recommended for production)* Add your permanent signing secrets (`RELEASE_KEYSTORE_BASE64`, `STORE_PASSWORD`, `KEY_PASSWORD`) under GitHub Repo **Settings -> Secrets and variables -> Actions** (never commit `.jks` or `.keystore` files). If secrets are not added yet, the workflow automatically builds a `debug.keystore.base64`-signed Debug APK instead.
+2. *(Recommended for production)* Add your permanent signing secrets (`RELEASE_KEYSTORE_BASE64`, `STORE_PASSWORD`, `KEY_PASSWORD`) — or `DEBUG_KEYSTORE_BASE64` for consistent debug signing — under GitHub Repo **Settings -> Secrets and variables -> Actions** (never commit `.jks` or `.keystore` files).
 3. Push to `main` (or push tag `v1.1` / run **Actions -> Build & Release Android APK** manually) — GitHub Actions builds the `.apk` and attaches it to **Releases -> Latest** automatically.
 4. On user phones, the app automatically checks [`version.json`](version.json) on startup (or manually via **Settings -> App Updates (GitHub)** for `sdm0023/mobile-shop-repair-manager`) and displays the **Update Available** banner/prompt.
 
