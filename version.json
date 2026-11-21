@@ -1,8 +1,8 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
-  "releaseTitle": "Mobile Repair Shop v1.0",
-  "releaseNotes": "Offline-first Mobile Repair Shop Manager with job cards, 12-point device checklist, Khata ledger, PDF receipts, WhatsApp dispatch, and Google Sheets sync.",
+  "versionCode": 2,
+  "versionName": "1.1",
+  "releaseTitle": "Mobile Repair Shop v1.1",
+  "releaseNotes": "Added App & Signature Info (Show Info) page inside Sync Manager with live SHA-1, SHA-256, MD5, and certificate inspection, plus consistent GitHub APK signing support.",
   "apkDownloadUrl": "https://github.com/sdm0023/mobile-shop-repair-manager/releases/latest",
   "releasePageUrl": "https://github.com/sdm0023/mobile-shop-repair-manager/releases/latest"
 }
