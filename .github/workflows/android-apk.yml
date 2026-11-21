@@ -58,6 +58,7 @@ jobs:
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          DEBUG_KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
           if [ -n "$ANDROID_HOME" ] && [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
@@ -66,7 +67,7 @@ jobs:
           TAG="${{ steps.meta.outputs.tag }}"
           if [ -n "$KEYSTORE_B64" ] && [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_PASSWORD" ]; then
             echo "Building signed Release APK..."
-            echo "$KEYSTORE_B64" | base64 --decode > "${{ runner.temp }}/release-keystore.jks"
+            printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]' | base64 --decode > "${{ runner.temp }}/release-keystore.jks"
             KEYSTORE_PATH="${{ runner.temp }}/release-keystore.jks" gradle :app:assembleRelease --no-daemon --stacktrace
             APK_OUT="dist-apk/MobileRepairShop-${TAG}.apk"
             cp app/build/outputs/apk/release/app-release.apk "$APK_OUT"
@@ -74,11 +75,16 @@ jobs:
           else
             echo "Release signing secrets not configured yet; building Debug APK..."
             if [ ! -f debug.keystore ]; then
-              if [ -s debug.keystore.base64 ]; then
+              if [ -n "$DEBUG_KEYSTORE_B64" ]; then
+                echo "Decoding debug.keystore from DEBUG_KEYSTORE_BASE64 secret..."
+                printf '%s' "$DEBUG_KEYSTORE_B64" | tr -d '[:space:]' | base64 --decode > debug.keystore
+                SIGNING_SOURCE="DEBUG_KEYSTORE_BASE64 secret"
+              elif [ -s debug.keystore.base64 ]; then
                 echo "Decoding debug.keystore from debug.keystore.base64..."
-                base64 --decode debug.keystore.base64 > debug.keystore
+                tr -d '[:space:]' < debug.keystore.base64 | base64 --decode > debug.keystore
+                SIGNING_SOURCE="repo debug.keystore.base64"
               else
-                echo "debug.keystore.base64 not found in repo; generating CI debug.keystore via keytool..."
+                echo "WARNING: DEBUG_KEYSTORE_BASE64 secret and debug.keystore.base64 not found; generating temporary CI debug.keystore via keytool..."
                 keytool -genkeypair -v \
                   -keystore debug.keystore \
                   -storetype PKCS12 \
@@ -89,12 +95,15 @@ jobs:
                   -keysize 2048 \
                   -validity 10000 \
                   -dname "CN=Android Debug,O=Android,C=US"
+                SIGNING_SOURCE="temporary random keytool key"
               fi
+            else
+              SIGNING_SOURCE="existing debug.keystore"
             fi
             gradle :app:assembleDebug --no-daemon --stacktrace
             APK_OUT="dist-apk/MobileRepairShop-${TAG}-debug.apk"
             cp app/build/outputs/apk/debug/app-debug.apk "$APK_OUT"
-            echo "mode=Debug APK (configure RELEASE_KEYSTORE_BASE64 secret for Release APK)" >> "$GITHUB_OUTPUT"
+            echo "mode=Debug APK (${SIGNING_SOURCE})" >> "$GITHUB_OUTPUT"
           fi
           echo "apk_path=${APK_OUT}" >> "$GITHUB_OUTPUT"
 
