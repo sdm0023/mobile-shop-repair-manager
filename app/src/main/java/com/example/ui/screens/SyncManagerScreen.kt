@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.ui.AppScreen
 import com.example.ui.ShopViewModel
 import com.example.ui.components.AppButton
 import com.example.ui.components.AppCard
@@ -125,6 +126,20 @@ fun SyncManagerScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
+                            tint = shopColors.topBarContent
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { viewModel.navigateTo(AppScreen.APP_SIGNATURE_INFO) },
+                        modifier = Modifier
+                            .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
+                            .testTag("btn_sync_top_show_info")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = stringResource(R.string.cd_open_app_info),
                             tint = shopColors.topBarContent
                         )
                     }
@@ -548,6 +563,20 @@ fun SyncManagerScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        AppButton(
+                            text = stringResource(R.string.btn_show_info),
+                            onClick = { viewModel.navigateTo(AppScreen.APP_SIGNATURE_INFO) },
+                            modifier = Modifier.fillMaxWidth(),
+                            testTag = "btn_sync_show_info",
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(
                             onClick = {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager

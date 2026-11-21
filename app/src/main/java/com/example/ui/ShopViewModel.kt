@@ -54,6 +54,7 @@ enum class AppScreen {
     SETTINGS_HOME,
     SHOP_SETTINGS,
     SYNC_MANAGER,
+    APP_SIGNATURE_INFO,
     RECEIPT_PREVIEW
 }
 
@@ -482,6 +483,10 @@ class ShopViewModel(application: Application) : AndroidViewModel(application) {
             AppScreen.SHOP_SETTINGS,
             AppScreen.SYNC_MANAGER -> {
                 currentScreen = AppScreen.SETTINGS_HOME
+                true
+            }
+            AppScreen.APP_SIGNATURE_INFO -> {
+                currentScreen = AppScreen.SYNC_MANAGER
                 true
             }
             AppScreen.RECEIPT_PREVIEW -> {

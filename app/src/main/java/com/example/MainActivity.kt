@@ -48,6 +48,7 @@ import com.example.ui.AppScreen
 import com.example.ui.ShopViewModel
 import com.example.ui.UpdateCheckUiState
 import com.example.ui.components.WhatsAppPreviewDialog
+import com.example.ui.screens.AppSignatureInfoScreen
 import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.JobDetailScreen
 import com.example.ui.screens.KhataBookScreen
@@ -131,6 +132,7 @@ class MainActivity : ComponentActivity() {
                         AppScreen.SETTINGS_HOME -> SettingsHomeScreen(viewModel = viewModel)
                         AppScreen.SHOP_SETTINGS -> ShopSettingsScreen(viewModel = viewModel)
                         AppScreen.SYNC_MANAGER -> SyncManagerScreen(viewModel = viewModel)
+                        AppScreen.APP_SIGNATURE_INFO -> AppSignatureInfoScreen(viewModel = viewModel)
                     }
                 }
 
