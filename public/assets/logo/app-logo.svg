@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="10 10 88 88">
+  <defs>
+    <linearGradient id="bgGrad" x1="15" y1="15" x2="95" y2="95" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="60%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <clipPath id="roundedClip">
+      <rect x="10" y="10" width="88" height="88" rx="18" ry="18" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#roundedClip)">
+    <!-- Royal Blue Gradient Background -->
+    <rect x="0" y="0" width="108" height="108" fill="url(#bgGrad)" />
+
+    <!-- Subtle Technical Grid Lines -->
+    <path
+      d="M24,0 L24,108 M48,0 L48,108 M72,0 L72,108 M0,36 L108,36 M0,72 L108,72"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-opacity="0.12"
+      stroke-width="0.75"
+    />
+
+    <!-- Phone Outer Body -->
+    <path
+      fill="#E2E8F0"
+      d="M37,22 C34.8,22 33,23.8 33,26 L33,82 C33,84.2 34.8,86 37,86 L71,86 C73.2,86 75,84.2 75,82 L75,26 C75,23.8 73.2,22 71,22 Z"
+    />
+
+    <!-- Phone Screen (Dark Display) -->
+    <path fill="#0F172A" d="M36,27 L72,27 L72,81 L36,81 Z" />
+
+    <!-- Speaker Notch -->
+    <path
+      d="M48,24.5 L60,24.5"
+      fill="none"
+      stroke="#94A3B8"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Home Indicator Bar -->
+    <path
+      d="M49,83.5 L59,83.5"
+      fill="none"
+      stroke="#64748B"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Screwdriver (Diagonal Top-Right to Bottom-Left) -->
+    <path fill="#F59E0B" d="M65,37 L69,41 L53,57 L49,53 Z" />
+    <path fill="#D97706" d="M67,35 L73,41 L70,44 L64,38 Z" />
+    <path fill="#F1F5F9" d="M49,53 L53,57 L46,64 L44,62 Z" />
+
+    <!-- Wrench (Diagonal Top-Left to Bottom-Right) -->
+    <path
+      fill="#FFFFFF"
+      d="M42,39 C39,36 39,32 42,29 C44,27 47,27 49,29 L47,32 L49,34 L52,32 C54,34 54,37 52,39 L63,60 C64,62 63,64 61,65 L59,65 C58,64 57,63 56,62 Z"
+    />
+
+    <!-- Center Gear Accent -->
+    <circle cx="54" cy="53" r="4" fill="#38BDF8" />
+
+    <!-- Gear Center Hole -->
+    <circle cx="54" cy="53" r="1.5" fill="#0F172A" />
+  </g>
+</svg>

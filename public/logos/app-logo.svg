@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108">
+  <defs>
+    <linearGradient id="bgGrad" x1="15" y1="15" x2="95" y2="95" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="60%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <clipPath id="roundedClip">
+      <rect x="0" y="0" width="108" height="108" rx="22" ry="22"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#roundedClip)">
+    <!-- Background gradient -->
+    <rect x="0" y="0" width="108" height="108" fill="url(#bgGrad)"/>
+
+    <!-- Subtle technical grid lines -->
+    <path d="M24,0 L24,108 M48,0 L48,108 M72,0 L72,108 M0,36 L108,36 M0,72 L108,72"
+          fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="0.75"/>
+
+    <!-- Phone outer body -->
+    <path fill="#E2E8F0"
+          d="M37,22 C34.8,22 33,23.8 33,26 L33,82 C33,84.2 34.8,86 37,86 L71,86 C73.2,86 75,84.2 75,82 L75,26 C75,23.8 73.2,22 71,22 Z"/>
+
+    <!-- Phone screen (dark display) -->
+    <path fill="#0F172A" d="M36,27 L72,27 L72,81 L36,81 Z"/>
+
+    <!-- Speaker notch -->
+    <path d="M48,24.5 L60,24.5" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Home indicator bar -->
+    <path d="M49,83.5 L59,83.5" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Screwdriver (diagonal top-right to bottom-left) -->
+    <path fill="#F59E0B" d="M65,37 L69,41 L53,57 L49,53 Z"/>
+    <path fill="#D97706" d="M67,35 L73,41 L70,44 L64,38 Z"/>
+    <path fill="#F1F5F9" d="M49,53 L53,57 L46,64 L44,62 Z"/>
+
+    <!-- Wrench (diagonal top-left to bottom-right) -->
+    <path fill="#FFFFFF"
+          d="M42,39 C39,36 39,32 42,29 C44,27 47,27 49,29 L47,32 L49,34 L52,32 C54,34 54,37 52,39 L63,60 C64,62 63,64 61,65 L59,65 C58,64 57,63 56,62 Z"/>
+
+    <!-- Center gear accent -->
+    <path fill="#38BDF8"
+          d="M54,49 C56.2,49 58,50.8 58,53 C58,55.2 56.2,57 54,57 C51.8,57 50,55.2 50,53 C50,50.8 51.8,49 54,49 Z"/>
+
+    <!-- Gear center hole -->
+    <path fill="#0F172A"
+          d="M54,51.5 C54.8,51.5 55.5,52.2 55.5,53 C55.5,53.8 54.8,54.5 54,54.5 C53.2,54.5 52.5,53.8 52.5,53 C52.5,52.2 53.2,51.5 54,51.5 Z"/>
+  </g>
+</svg>

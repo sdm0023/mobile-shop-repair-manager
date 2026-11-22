@@ -1727,6 +1727,26 @@ export default function App() {
                 />
               </>
             )}
+
+            <footer className="mt-10 border-t border-slate-200/80 pt-4 pb-6 text-center text-xs text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                <span>Mobile Repair Shop POS</span>
+                <span aria-hidden="true">&middot;</span>
+                <a
+                  href="/privacy.html"
+                  className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Privacy Policy
+                </a>
+                <span aria-hidden="true">&middot;</span>
+                <a
+                  href="/terms.html"
+                  className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Terms of Service
+                </a>
+              </div>
+            </footer>
           </main>
         </div>
 
